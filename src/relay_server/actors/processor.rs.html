@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `relay-server/src/actors/processor.rs`."><title>processor.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-9bb858ba049f1f21.css" id="mainThemeStyle"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="relay_server" data-themes="" data-resource-suffix="" data-rustdoc-version="1.72.0 (5680fa18f 2023-08-23)" data-channel="1.72.0" data-search-js="search-f6292fe389d70017.js" data-settings-js="settings-de11bff964e9d4e5.js" data-settings-css="settings-8c76f75bfb6bd192.css" data-theme-light-css="light-0f8c037637f9eb3e.css" data-theme-dark-css="dark-1097f8e92a01e3cf.css" data-theme-ayu-css="ayu-614652228113ac93.css" ><script src="../../../static.files/storage-59fd9b8ccb335783.js"></script><script defer src="../../../static.files/source-script-106908c7a7964ba4.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../static.files/main-0795b7d26be81095.js"></script><noscript><link rel="stylesheet" media="(prefers-color-scheme:light)" href="../../../static.files/light-0f8c037637f9eb3e.css"><link rel="stylesheet" media="(prefers-color-scheme:dark)" href="../../../static.files/dark-1097f8e92a01e3cf.css"><link rel="stylesheet" href="../../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="icon" href="https://raw.githubusercontent.com/getsentry/relay/master/artwork/relay-icon.png"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../../relay_server/index.html"><img src="https://raw.githubusercontent.com/getsentry/relay/master/artwork/relay-icon.png" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `relay-server/src/actors/processor.rs`."><title>processor.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-9bb858ba049f1f21.css" id="mainThemeStyle"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="relay_server" data-themes="" data-resource-suffix="" data-rustdoc-version="1.72.1 (d5c2e9c34 2023-09-13)" data-channel="1.72.1" data-search-js="search-f6292fe389d70017.js" data-settings-js="settings-de11bff964e9d4e5.js" data-settings-css="settings-8c76f75bfb6bd192.css" data-theme-light-css="light-0f8c037637f9eb3e.css" data-theme-dark-css="dark-1097f8e92a01e3cf.css" data-theme-ayu-css="ayu-614652228113ac93.css" ><script src="../../../static.files/storage-59fd9b8ccb335783.js"></script><script defer src="../../../static.files/source-script-106908c7a7964ba4.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../static.files/main-0795b7d26be81095.js"></script><noscript><link rel="stylesheet" media="(prefers-color-scheme:light)" href="../../../static.files/light-0f8c037637f9eb3e.css"><link rel="stylesheet" media="(prefers-color-scheme:dark)" href="../../../static.files/dark-1097f8e92a01e3cf.css"><link rel="stylesheet" href="../../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="icon" href="https://raw.githubusercontent.com/getsentry/relay/master/artwork/relay-icon.png"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../../relay_server/index.html"><img src="https://raw.githubusercontent.com/getsentry/relay/master/artwork/relay-icon.png" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -3997,6 +3997,47 @@
 <a href="#3997" id="3997">3997</a>
 <a href="#3998" id="3998">3998</a>
 <a href="#3999" id="3999">3999</a>
+<a href="#4000" id="4000">4000</a>
+<a href="#4001" id="4001">4001</a>
+<a href="#4002" id="4002">4002</a>
+<a href="#4003" id="4003">4003</a>
+<a href="#4004" id="4004">4004</a>
+<a href="#4005" id="4005">4005</a>
+<a href="#4006" id="4006">4006</a>
+<a href="#4007" id="4007">4007</a>
+<a href="#4008" id="4008">4008</a>
+<a href="#4009" id="4009">4009</a>
+<a href="#4010" id="4010">4010</a>
+<a href="#4011" id="4011">4011</a>
+<a href="#4012" id="4012">4012</a>
+<a href="#4013" id="4013">4013</a>
+<a href="#4014" id="4014">4014</a>
+<a href="#4015" id="4015">4015</a>
+<a href="#4016" id="4016">4016</a>
+<a href="#4017" id="4017">4017</a>
+<a href="#4018" id="4018">4018</a>
+<a href="#4019" id="4019">4019</a>
+<a href="#4020" id="4020">4020</a>
+<a href="#4021" id="4021">4021</a>
+<a href="#4022" id="4022">4022</a>
+<a href="#4023" id="4023">4023</a>
+<a href="#4024" id="4024">4024</a>
+<a href="#4025" id="4025">4025</a>
+<a href="#4026" id="4026">4026</a>
+<a href="#4027" id="4027">4027</a>
+<a href="#4028" id="4028">4028</a>
+<a href="#4029" id="4029">4029</a>
+<a href="#4030" id="4030">4030</a>
+<a href="#4031" id="4031">4031</a>
+<a href="#4032" id="4032">4032</a>
+<a href="#4033" id="4033">4033</a>
+<a href="#4034" id="4034">4034</a>
+<a href="#4035" id="4035">4035</a>
+<a href="#4036" id="4036">4036</a>
+<a href="#4037" id="4037">4037</a>
+<a href="#4038" id="4038">4038</a>
+<a href="#4039" id="4039">4039</a>
+<a href="#4040" id="4040">4040</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>std::collections::BTreeMap;
 <span class="kw">use </span>std::convert::TryFrom;
 <span class="kw">use </span>std::error::Error;
@@ -4053,8 +4094,8 @@
     <span class="kw">crate</span>::actors::envelopes::SendMetrics,
     <span class="kw">crate</span>::actors::project_cache::UpdateRateLimits,
     <span class="kw">crate</span>::utils::{EnvelopeLimiter, MetricsLimiter},
-    relay_event_normalization::{StoreConfig, StoreProcessor},
-    relay_event_schema::protocol::ProfileContext,
+    relay_event_normalization::{span, StoreConfig, StoreProcessor},
+    relay_event_schema::protocol::{ProfileContext, Span},
     relay_quotas::{RateLimitingError, RedisRateLimiter},
     symbolic_unreal::{Unreal4Error, Unreal4ErrorKind},
 };
@@ -5128,29 +5169,16 @@
     <span class="doccomment">/// Process profiles and set the profile ID in the profile context on the transaction if successful
     </span><span class="attr">#[cfg(feature = <span class="string">&quot;processing&quot;</span>)]
     </span><span class="kw">fn </span>process_profiles(<span class="kw-2">&amp;</span><span class="self">self</span>, state: <span class="kw-2">&amp;mut </span>ProcessEnvelopeState) {
+        <span class="kw">let </span><span class="kw-2">mut </span>found_profile_id = <span class="prelude-val">None</span>;
         state.managed_envelope.retain_items(|item| <span class="kw">match </span>item.ty() {
             ItemType::Profile =&gt; {
                 <span class="kw">match </span>relay_profiling::expand_profile(<span class="kw-2">&amp;</span>item.payload(), state.event.value()) {
                     <span class="prelude-val">Ok</span>((profile_id, payload)) =&gt; {
                         <span class="kw">if </span>payload.len() &lt;= <span class="self">self</span>.inner.config.max_profile_size() {
-                            <span class="kw">if let </span><span class="prelude-val">Some</span>(event) = state.event.value_mut() {
-                                <span class="kw">if </span>event.ty.value() == <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span>EventType::Transaction) {
-                                    <span class="kw">let </span>contexts = event.contexts.get_or_insert_with(Contexts::new);
-                                    contexts.add(ProfileContext {
-                                        profile_id: Annotated::new(profile_id),
-                                    });
-                                }
-                            }
+                            found_profile_id = <span class="prelude-val">Some</span>(profile_id);
                             item.set_payload(ContentType::Json, payload);
                             ItemAction::Keep
                         } <span class="kw">else </span>{
-                            <span class="kw">if let </span><span class="prelude-val">Some</span>(event) = state.event.value_mut() {
-                                <span class="kw">if </span>event.ty.value() == <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span>EventType::Transaction) {
-                                    <span class="kw">if let </span><span class="prelude-val">Some</span>(<span class="kw-2">ref mut </span>contexts) = event.contexts.value_mut() {
-                                        contexts.remove::&lt;ProfileContext&gt;();
-                                    }
-                                }
-                            }
                             ItemAction::Drop(Outcome::Invalid(DiscardReason::Profiling(
                                 relay_profiling::discard_reason(
                                     relay_profiling::ProfileError::ExceedSizeLimit,
@@ -5159,13 +5187,6 @@
                         }
                     }
                     <span class="prelude-val">Err</span>(err) =&gt; {
-                        <span class="kw">if let </span><span class="prelude-val">Some</span>(event) = state.event.value_mut() {
-                            <span class="kw">if </span>event.ty.value() == <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span>EventType::Transaction) {
-                                <span class="kw">let </span>contexts = event.contexts.get_or_insert_with(Contexts::new);
-                                contexts.remove::&lt;ProfileContext&gt;();
-                            }
-                        }
-
                         <span class="kw">match </span>err {
                             relay_profiling::ProfileError::InvalidJson(<span class="kw">_</span>) =&gt; {
                                 <span class="macro">relay_log::warn!</span>(error = <span class="kw-2">&amp;</span>err <span class="kw">as </span><span class="kw-2">&amp;</span><span class="kw">dyn </span>Error, <span class="string">&quot;invalid profile&quot;</span>);
@@ -5180,6 +5201,20 @@
             }
             <span class="kw">_ </span>=&gt; ItemAction::Keep,
         });
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(event) = state.event.value_mut() {
+            <span class="kw">if </span>event.ty.value() == <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span>EventType::Transaction) {
+                <span class="kw">let </span>contexts = event.contexts.get_or_insert_with(Contexts::new);
+                <span class="comment">// If we found a profile, add its ID to the profile context on the transaction.
+                </span><span class="kw">if let </span><span class="prelude-val">Some</span>(profile_id) = found_profile_id {
+                    contexts.add(ProfileContext {
+                        profile_id: Annotated::new(profile_id),
+                    });
+                <span class="comment">// If not, we delete the profile context.
+                </span>} <span class="kw">else </span>{
+                    contexts.remove::&lt;ProfileContext&gt;();
+                }
+            }
+        }
     }
 
     <span class="doccomment">/// Remove replays if the feature flag is not enabled.
@@ -6236,11 +6271,32 @@
     }
 
     <span class="attr">#[cfg(feature = <span class="string">&quot;processing&quot;</span>)]
+    </span><span class="kw">fn </span>is_span_allowed(<span class="kw-2">&amp;</span><span class="self">self</span>, span: <span class="kw-2">&amp;</span>Span) -&gt; bool {
+        <span class="kw">let </span><span class="prelude-val">Some</span>(op) = span.op.value() <span class="kw">else </span>{
+            <span class="kw">return </span><span class="bool-val">false</span>;
+        };
+        <span class="kw">let </span><span class="prelude-val">Some</span>(description) = span.description.value() <span class="kw">else </span>{
+            <span class="kw">return </span><span class="bool-val">false</span>;
+        };
+        <span class="kw">let </span>system: <span class="kw-2">&amp;</span>str = span
+            .data
+            .value()
+            .and_then(|v| v.get(<span class="string">&quot;span.system&quot;</span>))
+            .and_then(|system| system.as_str())
+            .unwrap_or_default();
+        op.starts_with(<span class="string">&quot;db&quot;</span>)
+            &amp;&amp; !(op.contains(<span class="string">&quot;active_record&quot;</span>)
+                || op.contains(<span class="string">&quot;activerecord&quot;</span>)
+                || op.contains(<span class="string">&quot;clickhouse&quot;</span>)
+                || op.contains(<span class="string">&quot;mongodb&quot;</span>)
+                || op.contains(<span class="string">&quot;redis&quot;</span>))
+            &amp;&amp; !(op == <span class="string">&quot;db.sql.query&quot; </span>&amp;&amp; !(description.contains(<span class="string">r#&quot;&quot;$&quot;#</span>) || system == <span class="string">&quot;mongodb&quot;</span>))
+    }
+
+    <span class="attr">#[cfg(feature = <span class="string">&quot;processing&quot;</span>)]
     </span><span class="kw">fn </span>extract_spans(<span class="kw-2">&amp;</span><span class="self">self</span>, state: <span class="kw-2">&amp;mut </span>ProcessEnvelopeState) {
         <span class="comment">// For now, drop any spans submitted by the SDK.
-
-        </span><span class="kw">use </span>relay_event_schema::protocol::Span;
-        state.managed_envelope.retain_items(|item| <span class="kw">match </span>item.ty() {
+        </span>state.managed_envelope.retain_items(|item| <span class="kw">match </span>item.ty() {
             ItemType::Span =&gt; ItemAction::DropSilently,
             <span class="kw">_ </span>=&gt; ItemAction::Keep,
         });
@@ -6258,12 +6314,6 @@
             <span class="kw">return</span>;
         };
 
-        <span class="comment">// Extract transaction as a span.
-        </span><span class="kw">let </span><span class="prelude-val">Some</span>(event) = state.event.value() <span class="kw">else </span>{
-            <span class="kw">return</span>;
-        };
-        <span class="kw">let </span>transaction_span: Span = event.into();
-
         <span class="kw">let </span><span class="kw-2">mut </span>add_span = |span: Annotated&lt;Span&gt;| {
             <span class="kw">let </span>span = <span class="kw">match </span>span.to_json() {
                 <span class="prelude-val">Ok</span>(span) =&gt; span,
@@ -6277,23 +6327,51 @@
             state.managed_envelope.envelope_mut().add_item(item);
         };
 
+        <span class="kw">let </span><span class="prelude-val">Some</span>(event) = state.event.value() <span class="kw">else </span>{
+            <span class="kw">return</span>;
+        };
+
+        <span class="comment">// Extract transaction as a span.
+        </span><span class="kw">let </span><span class="kw-2">mut </span>transaction_span: Span = event.into();
+
+        <span class="kw">let </span>all_modules_enabled = state
+            .project_state
+            .has_feature(Feature::SpanMetricsExtractionAllModules);
+
         <span class="comment">// Add child spans as envelope items.
         </span><span class="kw">if let </span><span class="prelude-val">Some</span>(child_spans) = event.spans.value() {
             <span class="kw">for </span>span <span class="kw">in </span>child_spans {
-                <span class="comment">// HACK: clone the span to set the segment_id. This should happen
-                // as part of normalization once standalone spans reach wider adoption.
-                </span><span class="kw">let </span><span class="kw-2">mut </span>span = span.clone();
-                <span class="kw">let </span><span class="prelude-val">Some</span>(inner_span) = span.value_mut() <span class="kw">else </span>{
+                <span class="kw">let </span><span class="prelude-val">Some</span>(inner_span) = span.value() <span class="kw">else </span>{
                     <span class="kw">continue</span>;
                 };
-                inner_span.segment_id = transaction_span.segment_id.clone();
-                inner_span.is_segment = Annotated::new(<span class="bool-val">false</span>);
-                add_span(span);
+                <span class="comment">// HACK: filter spans based on module until we figure out grouping.
+                </span><span class="kw">if </span>!all_modules_enabled &amp;&amp; !<span class="self">self</span>.is_span_allowed(inner_span) {
+                    <span class="kw">continue</span>;
+                }
+                <span class="comment">// HACK: clone the span to set the segment_id. This should happen
+                // as part of normalization once standalone spans reach wider adoption.
+                </span><span class="kw">let </span><span class="kw-2">mut </span>new_span = inner_span.clone();
+                new_span.segment_id = transaction_span.segment_id.clone();
+                new_span.is_segment = Annotated::new(<span class="bool-val">false</span>);
+                add_span(Annotated::new(new_span));
             }
         }
 
-        <span class="comment">// Add transaction span as an envelope item.
-        </span>add_span(transaction_span.into());
+        <span class="kw">if </span>all_modules_enabled {
+            <span class="comment">// Extract tags to add to this span as well
+            </span><span class="kw">let </span>shared_tags = span::tag_extraction::extract_shared_tags(event);
+            <span class="kw">let </span>data = transaction_span
+                .data
+                .value_mut()
+                .get_or_insert_with(Default::default);
+            data.extend(
+                shared_tags
+                    .clone()
+                    .into_iter()
+                    .map(|(k, v)| (k.to_string(), Annotated::new(v))),
+            );
+            add_span(transaction_span.into());
+        }
     }
 
     <span class="doccomment">/// Computes the sampling decision on the incoming event
@@ -6805,6 +6883,10 @@
                 </span><span class="macro">relay_log::error!</span>(<span class="string">&quot;failed to subscribe to GlobalConfigService&quot;</span>);
                 <span class="kw">return</span>;
             };
+
+            <span class="comment">// In case we use static global config, the watch wont be updated repeatedly, so we
+            // should immediatly use the content of the watch.
+            </span><span class="self">self</span>.global_config = subscription.borrow().clone();
 
             <span class="kw">loop </span>{
                 <span class="kw">let </span>next_msg = <span class="kw">async </span>{
